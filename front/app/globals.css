@@ -1,0 +1,8 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root { color-scheme: dark; }
+body { @apply bg-slate-950 text-slate-100; }
+.container { @apply max-w-6xl mx-auto px-4; }
+.badge { @apply text-xs px-2 py-1 rounded-full bg-slate-800 border border-slate-700; }
