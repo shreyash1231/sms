@@ -57,7 +57,7 @@ PORT → Port your backend server will run on
 
 ### Backend
 ```bash
-cd backend
+cd back
 cp .env.example .env
 npm install
 npx prisma generate
@@ -69,7 +69,7 @@ API Base: `http://localhost:4000`
 
 ### Frontend
 ```bash
-cd frontend
+cd front
 cp env.example .env.local
 npm install
 npm run dev
