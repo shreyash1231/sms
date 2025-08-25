@@ -279,4 +279,102 @@ DELETE /api/students/:id
 - **RBAC:**  
   - ADMIN          → Full CRUD, see active & inactive.  
   - VIEWER OR USER → View only active students.
+```Ranking Logic
+
+We used Dense Ranking for student scores:
+
+Step 1: Fetch all students (active only for USER, active + inactive for ADMIN).
+
+Step 2: Sort students by score in descending order.
+
+Step 3: Assign ranks:
+
+First student gets Rank 1.
+
+If multiple students have the same score, they share the same rank.
+
+The next different score increases the rank by +1 (not skipping).
+
+Example
+Name	Score	Rank
+Alice	98	1
+Bob	95	2
+Carol	95	2
+Dave	92	3
+Eve	90	4
+
+Alice has the highest score → Rank 1.
+
+Bob & Carol both scored 95 → they share Rank 2.
+
+Dave’s score (92) is next distinct → Rank 3.
+
+Eve gets Rank 4.
+
+This ensures fairness and avoids rank gaps.
+
+Challenges Faced & Solutions
+1. RBAC Enforcement
+
+Challenge: Ensuring that USER could only modify their own data, while ADMIN had full control.
+
+Solution: Implemented middleware that:
+
+Decodes JWT, attaches req.user.
+
+Checks ownership (student.ownerId === req.user.id) for USER.
+
+Grants override to ADMIN.
+
+2. Ranking Calculation
+
+Challenge: Prisma/MySQL does not provide a built-in dense ranking function that works well with filtering/pagination.
+
+Solution:
+
+Retrieved filtered results.
+
+Sorted in memory by score.
+
+Applied custom dense ranking algorithm in Node.js.
+
+Attached rank before sending response.
+
+3. Soft Delete vs Hard Delete
+
+Challenge: Users wanted to "delete" students but keep history.
+
+Solution: Added isActive field instead of removing records.
+
+ADMIN sees both active/inactive.
+
+USER sees only active.
+
+4. Frontend RBAC UI
+
+Challenge: Preventing USER from seeing admin-only buttons (edit/delete for others).
+
+Solution:
+
+Used user.role from JWT payload in frontend state.
+
+Conditionally rendered buttons.
+
+Also validated again in backend for security.
+
+5. Password Security
+
+Challenge: Storing credentials securely.
+
+Solution: Used bcryptjs for hashing before saving to DB.
+
+Login compares with hash.
+
+Tokens are signed with JWT_SECRET.
+
+6. Pagination & Filtering
+
+Challenge: Combining search, filters, and pagination without performance loss.
+
+Solution: Prisma’s where + skip + take queries, with dynamic filtering (name, email, course, year).```
 
